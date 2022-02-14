@@ -55,31 +55,23 @@ const userController = {
       .catch(err => next(err))
   },
   getUser: (req, res, next) => {
-    const paramsId = parseInt(req.params.id)
-    const userId = auth.getUser(req).id
-    return Promise.all([
-      User.findByPk(paramsId, {
-        include: { model: Comment, include: Restaurant }
-      }),
-      User.findByPk(userId, {
-        include: { model: Comment, include: Restaurant }
-      })
-    ])
-      .then(([guest, host]) => {
-        if (!guest) throw new Error('User did not exist!')
+    return User.findByPk(req.params.id, {
+      include: { model: Comment, include: Restaurant }
+    })
+      .then(user => {
+        if (!user) throw new Error('User did not exist!')
         let commentCounts = ''
-        if (guest.Comments) commentCounts = guest.Comments.length
-        res.render('users/profile', { user: guest.toJSON(), loggedInUser: host.toJSON(), commentCounts })
+        if (user.Comments) commentCounts = user.Comments.length
+        res.render('users/profile', { user: user.toJSON(), commentCounts })
       })
       .catch(err => next(err))
   },
   editUser: (req, res, next) => {
-    const paramsId = parseInt(req.params.id)
-    const userId = auth.getUser(req).id
-    return User.findByPk(paramsId)
+    if (auth.getUser(req).id !== Number(req.params.id)) throw new Error('Not accessible.')
+    const userId = auth.getUser(req).id || req.params.id
+    return User.findByPk(userId)
       .then(user => {
         if (!user) throw new Error('User did not exist!')
-        if (userId !== user.id) throw new Error('Can not access!')
         res.render('users/edit', { user: user.toJSON() })
       })
       .catch(err => next(err))

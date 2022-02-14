@@ -5,8 +5,8 @@
 		<div class="col-md-8">
 			<h3>{{user.name}}</h3>
 			<p>{{user.email}}</p>
-			{{#ifCond user.id loggedInUser.id}}
-				<a class="btn btn-primary" href="/users/{{loggedInUser.id}}/edit">Edit
+			{{#ifCond user.id currentUser.id}}
+				<a class="btn btn-primary" href="/users/{{user.id}}/edit">Edit
 				</a>
 			{{/ifCond}}
 		</div>
@@ -17,12 +17,12 @@
     {{commentCounts}} 已評論餐廳
   </div>
   <div class="card-body d-flex flex-wrap">
-{{#each user.Comments}}
-    <div class="col-md-1">
-    	<a href="/restaurants/{{this.Restaurant.id}}">
-			<img src="{{this.Restaurant.image}}" style="width:100px; margin: ;transition: opacity 0.5s; opacity:0;" class="img-responsive center-block mb-5" onload="this.style.opacity=1;">
-		</a>
-	</div>
-{{/each}}
+		{{#each user.Comments}}
+	    <div class="col-md-1">
+	    	<a href="/restaurants/{{this.Restaurant.id}}">
+				<img src="{{this.Restaurant.image}}" style="width:100px; margin: ;transition: opacity 0.5s; opacity:0;" class="img-responsive center-block mb-5" onload="this.style.opacity=1;">
+				</a>
+			</div>
+		{{/each}}
   </div>
 </div>
