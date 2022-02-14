@@ -3,6 +3,7 @@ const db = require('../models')
 const { User } = db
 const { imgurFileHandler } = require('../helpers/file-helpers')
 const { Restaurant, Comment, Favorite, Like, Followship } = require('../models')
+const auth = require('../helpers/auth-helpers')
 const userController = {
   signUpPage: (req, res) => {
     res.render('signup')
@@ -54,38 +55,31 @@ const userController = {
       .catch(err => next(err))
   },
   getUser: (req, res, next) => {
-    return User.findByPk(req.params.id, {
-      include: { model: Comment, include: Restaurant }
-    })
-      .then(user => {
-        if (!user) throw new Error('User did not exist!')
+    const paramsId = parseInt(req.params.id)
+    const userId = auth.getUser(req).id
+    return Promise.all([
+      User.findByPk(paramsId, {
+        include: { model: Comment, include: Restaurant }
+      }),
+      User.findByPk(userId, {
+        include: { model: Comment, include: Restaurant }
+      })
+    ])
+      .then(([guest, host]) => {
+        if (!guest) throw new Error('User did not exist!')
         let commentCounts = ''
-        if (user.Comments) commentCounts = user.Comments.length
-        res.render('users/profile', { user: user.toJSON(), commentCounts })
+        if (guest.Comments) commentCounts = guest.Comments.length
+        res.render('users/profile', { user: guest.toJSON(), loggedInUser: host.toJSON(), commentCounts })
       })
       .catch(err => next(err))
-    // 上面這組程式碼可以使用也能通過測試，可是如果在瀏覽器直接輸入別的params id，
-    // header的email就會變成該profile的email，所以我原本用的是下面註解掉的程式碼，
-    // 可是目前的測試檔mock req內容為{ params: { id: 1 }, flash: [Function (anonymous)] }
-    // 所以以下程式碼在開發環境可以使用，在測試環境就會跳錯找不到user.id。
-    // return Promise.all([
-    //   User.findByPk(req.params.id),
-    //   User.findByPk(req.user.id)
-    // ])
-    //   .then(([guestUser, hostUser]) => {
-    //     if (!hostUser) throw new Error('User did not exist!')
-    //     res.render('users/profile', {
-    //       user: hostUser.toJSON(),
-    //       guest: guestUser.toJSON()
-    //     })
-    //   })
-    //   .catch(err => next(err))
   },
   editUser: (req, res, next) => {
     const paramsId = parseInt(req.params.id)
+    const userId = auth.getUser(req).id
     return User.findByPk(paramsId)
       .then(user => {
         if (!user) throw new Error('User did not exist!')
+        if (userId !== user.id) throw new Error('Can not access!')
         res.render('users/edit', { user: user.toJSON() })
       })
       .catch(err => next(err))

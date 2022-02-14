@@ -1,16 +1,3 @@
-{{#if guest}}
-	<div class="d-flex align-items-center justify-content-center">
-		<div class="col-md-3">
-			<img src="{{guest.image}}" style="width:250px; transition: opacity 0.5s; opacity:0;" class="img-responsive center-block mb-5" onload="this.style.opacity=1;">
-		</div>
-		<div class="col-md-8">
-			<h3>{{guest.name}}</h3>
-			<p>{{guest.email}}</p>
-			<a class="btn btn-primary" href="/users/{{guest.id}}/edit">Edit
-			</a>
-		</div>
-	</div>
-{{else}}
 	<div class="d-flex align-items-center justify-content-center">
 		<div class="col-md-3">
 			<img src="{{user.image}}" style="width:250px; transition: opacity 0.5s; opacity:0;" class="img-responsive center-block mb-5" onload="this.style.opacity=1;">
@@ -18,11 +5,13 @@
 		<div class="col-md-8">
 			<h3>{{user.name}}</h3>
 			<p>{{user.email}}</p>
-			<a class="btn btn-primary" href="/users/{{user.id}}/edit">Edit
-			</a>
+			{{#ifCond user.id loggedInUser.id}}
+				<a class="btn btn-primary" href="/users/{{loggedInUser.id}}/edit">Edit
+				</a>
+			{{/ifCond}}
 		</div>
 	</div>
-{{/if}}
+
 <div class="card">
   <div class="card-header">
     {{commentCounts}} 已評論餐廳
